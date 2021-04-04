@@ -1,9 +1,0 @@
-{
-	"extends": [
-		"nodecraft"
-	],
-	"plugins": [
-		"json",
-		"node"
-	]
-}
