@@ -10,13 +10,13 @@
 		"greenlock",
 		"letsencrypt"
 	],
-	"homepage": "https://github.com/nodecraft/acme-dns-01-cloudflare#readme",
+	"homepage": "https://github.com/JCloudYu/acme-dns-01-cloudflare#readme",
 	"bugs": {
-		"url": "https://github.com/nodecraft/acme-dns-01-cloudflare/issues"
+		"url": "https://github.com/JCloudYu/acme-dns-01-cloudflare/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nodecraft/acme-dns-01-cloudflare.git"
+		"url": "git+https://github.com/JCloudYu/acme-dns-01-cloudflare.git"
 	},
 	"license": "MIT",
 	"author": "Nodecraft, Inc.",
