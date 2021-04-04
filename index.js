@@ -195,33 +195,57 @@ class Challenge {
 		}
 	}
 
+	// eslint-disable-next-line no-unused-vars
 	static async verifyPropagation(challenge, verbose = false, waitFor = 10000, retries = 30){
+		if ( challenge.removed ) {
+			return this.verifyPropagation_remove(...Array.prototype.slice.call(arguments));
+		}
+		else {
+			return this.verifyPropagation_probe(...Array.prototype.slice.call(arguments));
+		}
+	}
+	static async verifyPropagation_remove(challenge, verbose = false, waitFor = 10000, retries = 30) {
 		const fullRecordName = challenge.dnsPrefix + '.' + challenge.dnsZone;
+		const verifyCheck = challenge.dnsAuthorization;
+		
+		
+		
 		for(let i = 0; i < retries; i++){
 			try{
 				const records = await resolveTxt(fullRecordName);
-				const verifyCheck = challenge.dnsAuthorization;
-				if(challenge.removed === true && records.includes(verifyCheck)){
-					throw new Error(`DNS record deletion not yet propagated for ${fullRecordName}`);
-				}
-				if(!records.includes(verifyCheck)){
-					if(challenge.removed === true){
-						return;
-					}
-					throw new Error(`Could not verify DNS for ${fullRecordName}`);
+				if ( records.includes(verifyCheck) ) {
+					throw new Error(`REMOVE: DNS record deletion not yet propagated for ${fullRecordName}`);
 				}
 				return;
 			}catch(err){
-				if(err.code === 'ENODATA' && challenge.removed === true){
-					return;
-				}
-				if(verbose){
-					console.log(`DNS not propagated yet for ${fullRecordName}. Checking again in ${waitFor}ms. (Attempt ${i + 1} / ${retries})`);
+				if (err.code === 'ENODATA' || err.code === "ENOTFOUND") return;
+				if ( verbose ) {
+					console.log(`REMOVE: DNS not propagated yet for ${fullRecordName}. Checking again in ${waitFor}ms. (Attempt ${i + 1} / ${retries})`);
 				}
 				await delay(waitFor);
 			}
 		}
-		throw new Error(`Could not verify challenge for '${fullRecordName}'.`);
+		throw new Error(`REMOVE: Could not verify challenge for '${fullRecordName}'.`);
+	}
+	static async verifyPropagation_probe(challenge, verbose = false, waitFor = 10000, retries = 30) {
+		const fullRecordName = challenge.dnsPrefix + '.' + challenge.dnsZone;
+		const verifyCheck = challenge.dnsAuthorization;
+		
+		for(let i = 0; i < retries; i++){
+			try{
+				const records = await resolveTxt(fullRecordName);
+				if( !records.includes(verifyCheck) ) {
+					throw new Error(`PROBE: Could not verify DNS for ${fullRecordName}`);
+				}
+				return;
+			}catch(err){
+				if(verbose){
+					console.log(`PROBE: DNS not propagated yet for ${fullRecordName}. Checking again in ${waitFor}ms. (Attempt ${i + 1} / ${retries})`);
+				}
+				await delay(waitFor);
+			}
+		}
+		throw new Error(`PROBE: Could not verify challenge for '${fullRecordName}'.`);
 	}
 
 	async getZoneForDomain(domain){
